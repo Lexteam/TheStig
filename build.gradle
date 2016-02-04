@@ -28,6 +28,8 @@ repositories {
 dependencies {
     compile 'org.mongodb:mongo-java-driver:3.0.4'
     compile 'org.kitteh.irc:client-lib:0.3.10'
+    compile 'com.google.code.gson:gson:2.5'
+    compile 'com.google.guava:guava:19.0'
 }
 
 license {

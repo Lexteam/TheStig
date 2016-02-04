@@ -23,12 +23,75 @@
  */
 package xyz.lexteam.thestig;
 
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import org.kitteh.irc.client.library.Client;
+import org.kitteh.irc.client.library.ClientBuilder;
+import xyz.lexteam.thestig.data.ConfigModel;
+import xyz.lexteam.thestig.irc.MessageEventHandler;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.List;
+
 /**
  * The application entry-point.
  */
 public final class Main {
 
-    public static void main(String[] args) {
+    public static final Gson GSON = new Gson();
+    public static Main INSTANCE;
 
+    private ConfigModel config;
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDatabase;
+    private List<Client> servers = Lists.newArrayList();
+
+    private Main() throws FileNotFoundException {
+        // config
+        this.config = GSON.fromJson(new BufferedReader(new FileReader(new File("config.json"))), ConfigModel.class);
+
+        // mongo
+        this.mongoClient = new MongoClient(this.config.getDatabase().getHost(), this.config.getDatabase().getPort());
+        this.mongoDatabase = this.mongoClient.getDatabase("thestig");
+        getMongoDatabase().createCollection("chats");
+
+        // irc
+        for (ConfigModel.ServerModel serverModel : this.config.getServers()) {
+            ClientBuilder clientBuilder = Client.builder();
+            clientBuilder.serverHost(serverModel.getHost());
+            clientBuilder.serverPort(serverModel.getPort());
+            if (serverModel.getServerPassword().isPresent()) {
+                clientBuilder.serverPassword(serverModel.getServerPassword().get());
+            }
+            clientBuilder.secure(serverModel.isSsl());
+            clientBuilder.user(serverModel.getUsername());
+            clientBuilder.nick(serverModel.getNickname());
+            //clientBuilder.listenOutput(System.out::println);
+
+            Client client = clientBuilder.build();
+            client.getEventManager().registerEventListener(new MessageEventHandler());
+            this.servers.add(client);
+        }
+    }
+
+    public ConfigModel getConfig() {
+        return this.config;
+    }
+
+    public MongoClient getMongoClient() {
+        return this.mongoClient;
+    }
+
+    public MongoDatabase getMongoDatabase() {
+        return this.mongoDatabase;
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
+        INSTANCE = new Main();
     }
 }

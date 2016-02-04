@@ -126,3 +126,6 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
+
+### TheStig ###
+config.json
