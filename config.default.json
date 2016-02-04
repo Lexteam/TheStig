@@ -1,0 +1,15 @@
+{
+    "database": {
+        "host": "127.0.0.1",
+        "port": 27017
+    },
+    "servers": [
+        {
+            "host": "irc.esper.net",
+            "port": 6697,
+            "ssl": true,
+            "username": "iamabot",
+            "nickname": "iamabot"
+        }
+    ]
+}

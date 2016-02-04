@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'maven'
+
+    id 'idea'
+    id 'eclipse'
+
+    id 'com.github.hierynomus.license' version '0.11.0'
+}
+
+defaultTasks 'clean', 'licenseFormat'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = 'xyz.lexteam'
+version = '1.0.0-SNAPSHOT'
+description = "TheStig - Lexteam IRC logging bot."
+ext.url = 'http://www.lexteam.xyz/'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'http://repo.kitteh.org/content/groups/public/'
+    }
+}
+
+dependencies {
+    compile 'org.mongodb:mongo-java-driver:3.0.4'
+    compile 'org.kitteh.irc:client-lib:0.3.10'
+}
+
+license {
+    header file('HEADER.txt')
+    include '**/*.java'
+    include '**/*.groovy'
+
+    strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.10'
+}
