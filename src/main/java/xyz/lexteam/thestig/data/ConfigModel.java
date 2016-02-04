@@ -33,6 +33,8 @@ public class ConfigModel {
 
     private DatabaseModel database;
     private List<ServerModel> servers;
+    private List<String> enabledModules;
+    private String commandPrefix;
 
     public DatabaseModel getDatabase() {
         return this.database;
@@ -40,6 +42,14 @@ public class ConfigModel {
 
     public List<ServerModel> getServers() {
         return this.servers;
+    }
+
+    public List<String> getEnabledModules() {
+        return this.enabledModules;
+    }
+
+    public String getCommandPrefix() {
+        return this.commandPrefix;
     }
 
     public static class DatabaseModel {

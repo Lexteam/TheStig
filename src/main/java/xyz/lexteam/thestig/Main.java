@@ -30,8 +30,10 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.ClientBuilder;
+import xyz.lexteam.thestig.command.CommandManager;
 import xyz.lexteam.thestig.data.ConfigModel;
-import xyz.lexteam.thestig.irc.MessageEventHandler;
+import xyz.lexteam.thestig.module.IModule;
+import xyz.lexteam.thestig.module.logging.LoggingModule;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,6 +50,10 @@ public final class Main {
     public static Main INSTANCE;
 
     private ConfigModel config;
+    private List<IModule> modules = Lists.newArrayList();
+    private List<IModule> enabledModules = Lists.newArrayList();
+    private CommandManager commandManager;
+
     private MongoClient mongoClient;
     private MongoDatabase mongoDatabase;
     private List<Client> servers = Lists.newArrayList();
@@ -60,6 +66,18 @@ public final class Main {
         MongoClientURI clientURI = new MongoClientURI(this.config.getDatabase().getUri());
         this.mongoClient = new MongoClient(clientURI);
         this.mongoDatabase = this.mongoClient.getDatabase(clientURI.getDatabase());
+
+        // commands
+        this.commandManager = new CommandManager();
+
+        // modules
+        this.modules.add(new LoggingModule());
+
+        for (IModule module : this.modules) {
+            if (this.config.getEnabledModules().contains(module.getName())) {
+                this.enabledModules.add(module);
+            }
+        }
 
         // irc
         for (ConfigModel.ServerModel serverModel : this.config.getServers()) {
@@ -75,7 +93,12 @@ public final class Main {
             //clientBuilder.listenOutput(System.out::println);
 
             Client client = clientBuilder.build();
-            client.getEventManager().registerEventListener(new MessageEventHandler());
+
+            for (IModule module : this.enabledModules) {
+                client.getEventManager().registerEventListener(module);
+            }
+            client.getEventManager().registerEventListener(this.commandManager);
+
             this.servers.add(client);
         }
     }
@@ -90,6 +113,10 @@ public final class Main {
 
     public MongoDatabase getMongoDatabase() {
         return this.mongoDatabase;
+    }
+
+    public CommandManager getCommandManager() {
+        return this.commandManager;
     }
 
     public static void main(String[] args) throws FileNotFoundException {
