@@ -11,5 +11,8 @@
             "nickname": "iamabot"
         }
     ],
+    "enabledModules": [
+        "logging"
+    ],
     "commandPrefix": "."
 }

@@ -21,42 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.lexteam.thestig.module.logging;
+package xyz.lexteam.thestig.module.command;
 
-import com.mongodb.client.MongoCollection;
-import org.bson.Document;
-import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
-import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
+import com.google.gson.JsonObject;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.kitteh.irc.client.library.element.Channel;
 import xyz.lexteam.thestig.Main;
+import xyz.lexteam.thestig.command.CommandCallable;
 import xyz.lexteam.thestig.module.IModule;
 
 /**
- * The logging module.
+ * The shorten command / module.
  */
-public class LoggingModule implements IModule {
-
-    @Handler
-    public void onMessageEvent(ChannelMessageEvent event) {
-        try {
-            Document chatDocument = new Document();
-            chatDocument.put("network", event.getClient().getServerInfo().getNetworkName().get());
-            chatDocument.put("channel", event.getChannel().getName());
-            chatDocument.put("message", event.getMessage());
-
-            MongoCollection chats = Main.INSTANCE.getMongoDatabase().getCollection("chats");
-            chats.insertOne(chatDocument);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+public class ShortenModule implements IModule, CommandCallable {
 
     @Override
     public String getName() {
-        return "logging";
+        return "shorten";
     }
 
     @Override
     public void onEnable() {
+        Main.INSTANCE.getCommandManager().registerCommand(this, "shorten");
+    }
 
+    @Override
+    public void call(Channel channel, String[] args) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("longUrl", args[1]);
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.post("https://www.googleapis.com/urlshortener/v1/url/")
+                    .header("accept", "application/json")
+                    .body(Main.GSON.toJson(jsonObject))
+                    .asJson();
+            channel.sendMessage("Short URL - " + response.getBody().getObject().getString("id"));
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
     }
 }

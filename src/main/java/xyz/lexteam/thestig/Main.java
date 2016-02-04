@@ -24,6 +24,7 @@
 package xyz.lexteam.thestig;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -33,6 +34,7 @@ import org.kitteh.irc.client.library.ClientBuilder;
 import xyz.lexteam.thestig.command.CommandManager;
 import xyz.lexteam.thestig.data.ConfigModel;
 import xyz.lexteam.thestig.module.IModule;
+import xyz.lexteam.thestig.module.command.ShortenModule;
 import xyz.lexteam.thestig.module.logging.LoggingModule;
 
 import java.io.BufferedReader;
@@ -40,6 +42,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The application entry-point.
@@ -50,7 +53,7 @@ public final class Main {
     public static Main INSTANCE;
 
     private ConfigModel config;
-    private List<IModule> modules = Lists.newArrayList();
+    private Map<String, IModule> modules = Maps.newHashMap();
     private List<IModule> enabledModules = Lists.newArrayList();
     private CommandManager commandManager;
 
@@ -59,6 +62,8 @@ public final class Main {
     private List<Client> servers = Lists.newArrayList();
 
     private Main() throws FileNotFoundException {
+        INSTANCE = this;
+
         // config
         this.config = GSON.fromJson(new BufferedReader(new FileReader(new File("config.json"))), ConfigModel.class);
 
@@ -71,13 +76,12 @@ public final class Main {
         this.commandManager = new CommandManager();
 
         // modules
-        this.modules.add(new LoggingModule());
+        this.addModule(new LoggingModule());
+        this.addModule(new ShortenModule());
 
-        for (IModule module : this.modules) {
-            if (this.config.getEnabledModules().contains(module.getName())) {
-                this.enabledModules.add(module);
-            }
-        }
+        this.modules.values().stream().filter(
+                iModule -> config.getEnabledModules().stream().anyMatch(s -> s.equalsIgnoreCase(iModule.getName())))
+                .forEach(enabledModules::add);
 
         // irc
         for (ConfigModel.ServerModel serverModel : this.config.getServers()) {
@@ -101,6 +105,15 @@ public final class Main {
 
             this.servers.add(client);
         }
+
+        for (IModule module : this.enabledModules) {
+            System.out.println("Enabled module: " + module.getName());
+            module.onEnable();
+        }
+    }
+
+    private void addModule(IModule loggingModule) {
+        this.modules.put(loggingModule.getName().toLowerCase(), loggingModule);
     }
 
     public ConfigModel getConfig() {
@@ -120,6 +133,6 @@ public final class Main {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
-        INSTANCE = new Main();
+        new Main();
     }
 }
