@@ -44,15 +44,10 @@ public class ConfigModel {
 
     public static class DatabaseModel {
 
-        private String host;
-        private int port;
+        private String uri;
 
-        public String getHost() {
-            return this.host;
-        }
-
-        public int getPort() {
-            return this.port;
+        public String getUri() {
+            return this.uri;
         }
     }
 

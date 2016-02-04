@@ -26,6 +26,7 @@ package xyz.lexteam.thestig;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.ClientBuilder;
@@ -56,9 +57,9 @@ public final class Main {
         this.config = GSON.fromJson(new BufferedReader(new FileReader(new File("config.json"))), ConfigModel.class);
 
         // mongo
-        this.mongoClient = new MongoClient(this.config.getDatabase().getHost(), this.config.getDatabase().getPort());
-        this.mongoDatabase = this.mongoClient.getDatabase("thestig");
-        getMongoDatabase().createCollection("chats");
+        MongoClientURI clientURI = new MongoClientURI(this.config.getDatabase().getUri());
+        this.mongoClient = new MongoClient(clientURI);
+        this.mongoDatabase = this.mongoClient.getDatabase(clientURI.getDatabase());
 
         // irc
         for (ConfigModel.ServerModel serverModel : this.config.getServers()) {
