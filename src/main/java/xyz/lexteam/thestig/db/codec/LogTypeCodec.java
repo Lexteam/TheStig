@@ -21,40 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.lexteam.thestig.command;
+package xyz.lexteam.thestig.db.codec;
 
-import com.google.common.collect.Maps;
-import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
-import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
-import xyz.lexteam.thestig.Main;
-
-import java.util.Map;
+import org.bson.BsonReader;
+import org.bson.BsonWriter;
+import org.bson.codecs.Codec;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.EncoderContext;
+import xyz.lexteam.thestig.module.logging.LoggingModule;
 
 /**
- * The command manager.
- * It handles all the commands :D
+ * The Bson codec for {@link LoggingModule.LogType}.
  */
-public class CommandManager {
+public class LogTypeCodec implements Codec<LoggingModule.LogType> {
 
-    private Map<String, CommandCallable> commands = Maps.newHashMap();
-
-    public void registerCommand(CommandCallable callable, String... aliases) {
-        if (Main.INSTANCE.getConfig().getCommands().getEnabled().contains(callable.getName())) {
-            for (String alias : aliases) {
-                this.commands.put(alias, callable);
-            }
-        }
+    @Override
+    public LoggingModule.LogType decode(BsonReader reader, DecoderContext decoderContext) {
+        return LoggingModule.LogType.valueOf(reader.readString());
     }
 
-    @Handler
-    public void onMessageEvent(ChannelMessageEvent event) {
-        if (event.getMessage().startsWith(Main.INSTANCE.getConfig().getCommands().getPrefix())) {
-            String[] messageSplit = event.getMessage().split(" ");
-            String command = messageSplit[0].substring(1);
+    @Override
+    public void encode(BsonWriter writer, LoggingModule.LogType value, EncoderContext encoderContext) {
+        writer.writeString(value.name());
+    }
 
-            if (this.commands.containsKey(command)) {
-                this.commands.get(command).call(event.getChannel(), messageSplit);
-            }
-        }
+    @Override
+    public Class<LoggingModule.LogType> getEncoderClass() {
+        return LoggingModule.LogType.class;
     }
 }

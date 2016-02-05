@@ -25,8 +25,10 @@ package xyz.lexteam.thestig.module.logging;
 
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistries;
 import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
+import org.kitteh.irc.client.library.event.channel.ChannelPartEvent;
 import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
 import xyz.lexteam.thestig.data.db.Database;
 import xyz.lexteam.thestig.module.IModule;
@@ -69,7 +71,7 @@ public class LoggingModule implements IModule {
     }
 
     @Handler
-    public void onUserPart(ChannelJoinEvent event) {
+    public void onUserPart(ChannelPartEvent event) {
         try {
             Document chatDocument = new Document();
             chatDocument.put("network", event.getClient().getServerInfo().getNetworkName().get());
@@ -91,6 +93,7 @@ public class LoggingModule implements IModule {
 
     @Override
     public void onEnable() {
+
     }
 
     public enum LogType {

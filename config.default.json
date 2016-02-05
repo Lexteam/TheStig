@@ -11,11 +11,13 @@
             "nickname": "iamabot"
         }
     ],
+    "commands": {
+        "prefix": ".",
+        "enabled": [
+            "shorten"
+        ]
+    },
     "enabledModules": [
         "logging", "commands"
-    ],
-    "enabledCommands": [
-        "shorten"
-    ],
-    "commandPrefix": "."
+    ]
 }

@@ -24,9 +24,13 @@
 package xyz.lexteam.thestig.data.db;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 import xyz.lexteam.thestig.Main;
+import xyz.lexteam.thestig.db.codec.LogTypeCodec;
 
 /**
  * Holds the mongo database and client.
@@ -39,7 +43,13 @@ public final class Database {
     private MongoDatabase mongoDatabase;
 
     private Database() {
-        MongoClientURI clientURI = new MongoClientURI(Main.INSTANCE.getConfig().getDatabase().getUri());
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+                CodecRegistries.fromCodecs(new LogTypeCodec()),
+                MongoClient.getDefaultCodecRegistry());
+        MongoClientOptions.Builder options = MongoClientOptions.builder()
+                .codecRegistry(codecRegistry);
+
+        MongoClientURI clientURI = new MongoClientURI(Main.INSTANCE.getConfig().getDatabase().getUri(), options);
         this.mongoClient = new MongoClient(clientURI);
         this.mongoDatabase = this.mongoClient.getDatabase(clientURI.getDatabase());
     }
