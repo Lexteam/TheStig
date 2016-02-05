@@ -23,44 +23,21 @@
  */
 package xyz.lexteam.thestig.module.command;
 
-import com.google.gson.JsonObject;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.kitteh.irc.client.library.element.Channel;
 import xyz.lexteam.thestig.Main;
-import xyz.lexteam.thestig.command.CommandCallable;
 import xyz.lexteam.thestig.module.IModule;
 
 /**
- * The shorten command / module.
+ * The commands module.
  */
-public class ShortenModule implements IModule, CommandCallable {
+public class CommandsModule implements IModule {
 
     @Override
     public String getName() {
-        return "shorten";
+        return "commands";
     }
 
     @Override
     public void onEnable() {
-        Main.INSTANCE.getCommandManager().registerCommand(this, "shorten");
-    }
-
-    @Override
-    public void call(Channel channel, String[] args) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("longUrl", args[1]);
-
-        try {
-            HttpResponse<JsonNode> response = Unirest.post("https://www.googleapis.com/urlshortener/v1/url/")
-                    .header("accept", "application/json")
-                    .body(Main.GSON.toJson(jsonObject))
-                    .asJson();
-            channel.sendMessage("Short URL - " + response.getBody().getObject().getString("id"));
-        } catch (UnirestException e) {
-            e.printStackTrace();
-        }
+        Main.INSTANCE.getCommandManager().registerCommand(new ShortenCommand(), "shorten");
     }
 }

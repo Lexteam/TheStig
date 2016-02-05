@@ -21,40 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.lexteam.thestig.command;
+package xyz.lexteam.thestig.module.command;
 
-import com.google.common.collect.Maps;
-import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
-import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
+import com.google.gson.JsonObject;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import org.kitteh.irc.client.library.element.Channel;
 import xyz.lexteam.thestig.Main;
-
-import java.util.Map;
+import xyz.lexteam.thestig.command.CommandCallable;
+import xyz.lexteam.thestig.module.IModule;
 
 /**
- * The command manager.
- * It handles all the commands :D
+ * The shorten command.
  */
-public class CommandManager {
+public class ShortenCommand implements CommandCallable {
 
-    private Map<String, CommandCallable> commands = Maps.newHashMap();
-
-    public void registerCommand(CommandCallable callable, String... aliases) {
-        if (Main.INSTANCE.getConfig().getEnabledCommands().contains(callable.getName())) {
-            for (String alias : aliases) {
-                this.commands.put(alias, callable);
-            }
-        }
+    @Override
+    public String getName() {
+        return "shorten";
     }
 
-    @Handler
-    public void onMessageEvent(ChannelMessageEvent event) {
-        if (event.getMessage().startsWith(Main.INSTANCE.getConfig().getCommandPrefix())) {
-            String[] messageSplit = event.getMessage().split(" ");
-            String command = messageSplit[0].substring(1);
+    @Override
+    public void call(Channel channel, String[] args) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("longUrl", args[1]);
 
-            if (this.commands.containsKey(command)) {
-                this.commands.get(command).call(event.getChannel(), messageSplit);
-            }
+        try {
+            HttpResponse<JsonNode> response = Unirest.post("https://www.googleapis.com/urlshortener/v1/url/")
+                    .header("accept", "application/json")
+                    .body(Main.GSON.toJson(jsonObject))
+                    .asJson();
+            channel.sendMessage("Short URL - " + response.getBody().getObject().getString("id"));
+        } catch (UnirestException e) {
+            e.printStackTrace();
         }
     }
 }

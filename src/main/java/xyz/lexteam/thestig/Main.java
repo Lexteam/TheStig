@@ -34,7 +34,8 @@ import org.kitteh.irc.client.library.ClientBuilder;
 import xyz.lexteam.thestig.command.CommandManager;
 import xyz.lexteam.thestig.data.ConfigModel;
 import xyz.lexteam.thestig.module.IModule;
-import xyz.lexteam.thestig.module.command.ShortenModule;
+import xyz.lexteam.thestig.module.command.CommandsModule;
+import xyz.lexteam.thestig.module.command.ShortenCommand;
 import xyz.lexteam.thestig.module.logging.LoggingModule;
 
 import java.io.BufferedReader;
@@ -77,7 +78,7 @@ public final class Main {
 
         // modules
         this.addModule(new LoggingModule());
-        this.addModule(new ShortenModule());
+        this.addModule(new CommandsModule());
 
         this.modules.values().stream().filter(
                 iModule -> config.getEnabledModules().stream().anyMatch(s -> s.equalsIgnoreCase(iModule.getName())))

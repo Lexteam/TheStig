@@ -30,5 +30,7 @@ import org.kitteh.irc.client.library.element.Channel;
  */
 public interface CommandCallable {
 
+    String getName();
+
     void call(Channel channel, String[] args);
 }

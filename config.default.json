@@ -12,7 +12,10 @@
         }
     ],
     "enabledModules": [
-        "logging"
+        "logging", "commands"
+    ],
+    "enabledCommands": [
+        "shorten"
     ],
     "commandPrefix": "."
 }
