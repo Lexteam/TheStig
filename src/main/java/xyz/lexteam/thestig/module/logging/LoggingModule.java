@@ -23,7 +23,10 @@
  */
 package xyz.lexteam.thestig.module.logging;
 
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
@@ -35,6 +38,9 @@ import xyz.lexteam.thestig.module.IModule;
  */
 public class LoggingModule implements IModule {
 
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDatabase;
+
     @Handler
     public void onMessageEvent(ChannelMessageEvent event) {
         try {
@@ -43,7 +49,7 @@ public class LoggingModule implements IModule {
             chatDocument.put("channel", event.getChannel().getName());
             chatDocument.put("message", event.getMessage());
 
-            MongoCollection chats = Main.INSTANCE.getMongoDatabase().getCollection("chats");
+            MongoCollection chats = this.mongoDatabase.getCollection("chats");
             chats.insertOne(chatDocument);
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,6 +63,8 @@ public class LoggingModule implements IModule {
 
     @Override
     public void onEnable() {
-
+        MongoClientURI clientURI = new MongoClientURI(Main.INSTANCE.getConfig().getDatabase().getUri());
+        this.mongoClient = new MongoClient(clientURI);
+        this.mongoDatabase = this.mongoClient.getDatabase(clientURI.getDatabase());
     }
 }

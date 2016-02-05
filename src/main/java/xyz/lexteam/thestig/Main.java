@@ -26,16 +26,12 @@ package xyz.lexteam.thestig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.ClientBuilder;
 import xyz.lexteam.thestig.command.CommandManager;
 import xyz.lexteam.thestig.data.ConfigModel;
 import xyz.lexteam.thestig.module.IModule;
 import xyz.lexteam.thestig.module.command.CommandsModule;
-import xyz.lexteam.thestig.module.command.ShortenCommand;
 import xyz.lexteam.thestig.module.logging.LoggingModule;
 
 import java.io.BufferedReader;
@@ -57,9 +53,6 @@ public final class Main {
     private Map<String, IModule> modules = Maps.newHashMap();
     private List<IModule> enabledModules = Lists.newArrayList();
     private CommandManager commandManager;
-
-    private MongoClient mongoClient;
-    private MongoDatabase mongoDatabase;
     private List<Client> servers = Lists.newArrayList();
 
     private Main() throws FileNotFoundException {
@@ -67,11 +60,6 @@ public final class Main {
 
         // config
         this.config = GSON.fromJson(new BufferedReader(new FileReader(new File("config.json"))), ConfigModel.class);
-
-        // mongo
-        MongoClientURI clientURI = new MongoClientURI(this.config.getDatabase().getUri());
-        this.mongoClient = new MongoClient(clientURI);
-        this.mongoDatabase = this.mongoClient.getDatabase(clientURI.getDatabase());
 
         // commands
         this.commandManager = new CommandManager();
@@ -119,14 +107,6 @@ public final class Main {
 
     public ConfigModel getConfig() {
         return this.config;
-    }
-
-    public MongoClient getMongoClient() {
-        return this.mongoClient;
-    }
-
-    public MongoDatabase getMongoDatabase() {
-        return this.mongoDatabase;
     }
 
     public CommandManager getCommandManager() {
