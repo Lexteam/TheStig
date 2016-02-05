@@ -21,41 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.lexteam.thestig.module.logging;
+package xyz.lexteam.thestig.data.db;
 
-import com.mongodb.client.MongoCollection;
-import org.bson.Document;
-import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
-import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
-import xyz.lexteam.thestig.data.db.Database;
-import xyz.lexteam.thestig.module.IModule;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
+import xyz.lexteam.thestig.Main;
 
 /**
- * The logging module.
+ * Holds the mongo database and client.
  */
-public class LoggingModule implements IModule {
+public final class Database {
 
-    @Handler
-    public void onMessageEvent(ChannelMessageEvent event) {
-        try {
-            Document chatDocument = new Document();
-            chatDocument.put("network", event.getClient().getServerInfo().getNetworkName().get());
-            chatDocument.put("channel", event.getChannel().getName());
-            chatDocument.put("message", event.getMessage());
+    public static final Database INSTANCE = new Database();
 
-            MongoCollection chats = Database.INSTANCE.getMongoDatabase().getCollection("chats");
-            chats.insertOne(chatDocument);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDatabase;
+
+    private Database() {
+        MongoClientURI clientURI = new MongoClientURI(Main.INSTANCE.getConfig().getDatabase().getUri());
+        this.mongoClient = new MongoClient(clientURI);
+        this.mongoDatabase = this.mongoClient.getDatabase(clientURI.getDatabase());
     }
 
-    @Override
-    public String getName() {
-        return "logging";
+    public MongoClient getMongoClient() {
+        return this.mongoClient;
     }
 
-    @Override
-    public void onEnable() {
+    public MongoDatabase getMongoDatabase() {
+        return this.mongoDatabase;
     }
 }
