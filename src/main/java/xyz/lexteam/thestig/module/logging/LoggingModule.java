@@ -25,6 +25,7 @@ package xyz.lexteam.thestig.module.logging;
 
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
 import xyz.lexteam.thestig.data.db.Database;
@@ -41,9 +42,42 @@ public class LoggingModule implements IModule {
             Document chatDocument = new Document();
             chatDocument.put("network", event.getClient().getServerInfo().getNetworkName().get());
             chatDocument.put("channel", event.getChannel().getName());
+            chatDocument.put("type", LogType.MESSAGE);
             chatDocument.put("message", event.getMessage());
 
-            MongoCollection chats = Database.INSTANCE.getMongoDatabase().getCollection("chats");
+            MongoCollection chats = Database.INSTANCE.getMongoDatabase().getCollection("logs");
+            chats.insertOne(chatDocument);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Handler
+    public void onUserJoin(ChannelJoinEvent event) {
+        try {
+            Document chatDocument = new Document();
+            chatDocument.put("network", event.getClient().getServerInfo().getNetworkName().get());
+            chatDocument.put("channel", event.getChannel().getName());
+            chatDocument.put("type", LogType.JOIN);
+            chatDocument.put("message", event.getUser().getNick());
+
+            MongoCollection chats = Database.INSTANCE.getMongoDatabase().getCollection("logs");
+            chats.insertOne(chatDocument);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Handler
+    public void onUserPart(ChannelJoinEvent event) {
+        try {
+            Document chatDocument = new Document();
+            chatDocument.put("network", event.getClient().getServerInfo().getNetworkName().get());
+            chatDocument.put("channel", event.getChannel().getName());
+            chatDocument.put("type", LogType.PART);
+            chatDocument.put("message", event.getUser().getNick());
+
+            MongoCollection chats = Database.INSTANCE.getMongoDatabase().getCollection("logs");
             chats.insertOne(chatDocument);
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,5 +91,11 @@ public class LoggingModule implements IModule {
 
     @Override
     public void onEnable() {
+    }
+
+    public enum LogType {
+        MESSAGE,
+        JOIN,
+        PART
     }
 }
