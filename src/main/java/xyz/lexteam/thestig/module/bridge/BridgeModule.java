@@ -23,6 +23,7 @@
  */
 package xyz.lexteam.thestig.module.bridge;
 
+import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
 import xyz.lexteam.thestig.Main;
@@ -32,14 +33,20 @@ public class BridgeModule implements IModule {
 
     @Handler
     public void onMessageEvent(ChannelMessageEvent event) {
-        if (!event.getActor().getNick().equalsIgnoreCase("TheStig")) { // TODO: this is shit
-            if (Main.INSTANCE.getConfig().getBridges().containsKey(
-                    event.getClient().getServerInfo().getNetworkName().get() + "-" + event.getChannel().getName())) {
-                String secondaryChannel = Main.INSTANCE.getConfig().getBridges().get(event.getClient().getServerInfo
-                        ().getNetworkName().get() + "-" + event.getChannel().getName());
+        if (!event.getActor().getNick().equalsIgnoreCase(event.getClient().getNick())) {
+            String key = event.getClient().getServerInfo().getNetworkName().get() + "-" + event.getChannel().getName();
+
+            if (Main.INSTANCE.getConfig().getBridges().containsKey(key)) {
+                String secondaryChannel = Main.INSTANCE.getConfig().getBridges().get(key);
                 String[] split = secondaryChannel.split("-");
-                Main.INSTANCE.getServers().get(split[0]).getChannel(split[1]).get().sendMessage("[" + event.getActor
-                        ().getNick() + "] " +event.getMessage());
+
+                Client client = Main.INSTANCE.getServers().get(split[0]);
+                if (client != null) {
+                    if (client.getChannel(split[1]).isPresent()) {
+                        client.getChannel(split[1]).get()
+                                .sendMessage(String.format("[%s] %s", event.getActor().getNick(), event.getMessage()));
+                    }
+                }
             }
         }
     }
