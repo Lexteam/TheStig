@@ -4,6 +4,7 @@
     },
     "servers": [
         {
+            "name": "EsperNet",
             "host": "irc.esper.net",
             "port": 6697,
             "ssl": true,
@@ -11,6 +12,9 @@
             "nickname": "iamabot"
         }
     ],
+    "bridges": {
+
+    },
     "commands": {
         "prefix": ".",
         "enabled": [
