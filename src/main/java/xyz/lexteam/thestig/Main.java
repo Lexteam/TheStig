@@ -31,6 +31,7 @@ import org.kitteh.irc.client.library.ClientBuilder;
 import xyz.lexteam.thestig.command.CommandManager;
 import xyz.lexteam.thestig.data.ConfigModel;
 import xyz.lexteam.thestig.module.IModule;
+import xyz.lexteam.thestig.module.bridge.BridgeModule;
 import xyz.lexteam.thestig.module.command.CommandsModule;
 import xyz.lexteam.thestig.module.logging.LoggingModule;
 
@@ -53,7 +54,7 @@ public final class Main {
     private Map<String, IModule> modules = Maps.newHashMap();
     private List<IModule> enabledModules = Lists.newArrayList();
     private CommandManager commandManager;
-    private List<Client> servers = Lists.newArrayList();
+    private Map<String, Client> servers = Maps.newHashMap();
 
     private Main() throws FileNotFoundException {
         INSTANCE = this;
@@ -67,6 +68,7 @@ public final class Main {
         // modules
         this.addModule(new LoggingModule());
         this.addModule(new CommandsModule());
+        this.addModule(new BridgeModule());
 
         this.modules.values().stream().filter(
                 iModule -> config.getEnabledModules().stream().anyMatch(s -> s.equalsIgnoreCase(iModule.getName())))
@@ -92,7 +94,7 @@ public final class Main {
             }
             client.getEventManager().registerEventListener(this.commandManager);
 
-            this.servers.add(client);
+            this.addClient(serverModel, client);
         }
 
         for (IModule module : this.enabledModules) {
@@ -103,6 +105,14 @@ public final class Main {
 
     private void addModule(IModule loggingModule) {
         this.modules.put(loggingModule.getName().toLowerCase(), loggingModule);
+    }
+
+    private void addClient(ConfigModel.ServerModel serverModel, Client client) {
+        this.servers.put(serverModel.getName(), client);
+    }
+
+    public Map<String, Client> getServers() {
+        return this.servers;
     }
 
     public ConfigModel getConfig() {

@@ -24,6 +24,7 @@
 package xyz.lexteam.thestig.data;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -33,6 +34,7 @@ public class ConfigModel {
 
     private DatabaseModel database;
     private List<ServerModel> servers;
+    private Map<String, String> bridges;
     private CommandModel commands;
     private List<String> enabledModules;
 
@@ -42,6 +44,10 @@ public class ConfigModel {
 
     public List<ServerModel> getServers() {
         return this.servers;
+    }
+
+    public Map<String, String> getBridges() {
+        return this.bridges;
     }
 
     public CommandModel getCommands() {
@@ -77,12 +83,17 @@ public class ConfigModel {
 
     public static class ServerModel {
 
+        private String name;
         private String host;
         private String serverPassword;
         private int port;
         private boolean ssl;
         private String username;
         private String nickname;
+
+        public String getName() {
+            return this.name;
+        }
 
         public String getHost() {
             return this.host;
