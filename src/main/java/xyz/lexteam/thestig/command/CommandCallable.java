@@ -32,5 +32,5 @@ public interface CommandCallable {
 
     String getName();
 
-    void call(Channel channel, String[] args);
+    void call(Channel channel, CommandArgs args);
 }

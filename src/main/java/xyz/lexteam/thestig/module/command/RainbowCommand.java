@@ -23,39 +23,23 @@
  */
 package xyz.lexteam.thestig.module.command;
 
-import com.google.gson.JsonObject;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.kitteh.irc.client.library.element.Channel;
-import xyz.lexteam.thestig.Main;
+import org.kitteh.irc.client.library.util.StringUtil;
+import xyz.lexteam.thestig.command.CommandArgs;
 import xyz.lexteam.thestig.command.CommandCallable;
-import xyz.lexteam.thestig.module.IModule;
 
 /**
- * The shorten command.
+ * The rainbow command.
  */
-public class ShortenCommand implements CommandCallable {
+public class RainbowCommand implements CommandCallable {
 
     @Override
     public String getName() {
-        return "shorten";
+        return "rainbow";
     }
 
     @Override
-    public void call(Channel channel, String[] args) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("longUrl", args[1]);
-
-        try {
-            HttpResponse<JsonNode> response = Unirest.post("https://www.googleapis.com/urlshortener/v1/url/")
-                    .header("accept", "application/json")
-                    .body(Main.GSON.toJson(jsonObject))
-                    .asJson();
-            channel.sendMessage("Short URL - " + response.getBody().getObject().getString("id"));
-        } catch (UnirestException e) {
-            e.printStackTrace();
-        }
+    public void call(Channel channel, CommandArgs args) {
+        channel.sendMessage(StringUtil.makeRainbow(args.getInput()));
     }
 }

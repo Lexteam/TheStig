@@ -38,6 +38,6 @@ public class CommandsModule implements IModule {
 
     @Override
     public void onEnable() {
-        Main.INSTANCE.getCommandManager().registerCommand(new ShortenCommand(), "shorten");
+        Main.INSTANCE.getCommandManager().registerCommand(new RainbowCommand());
     }
 }

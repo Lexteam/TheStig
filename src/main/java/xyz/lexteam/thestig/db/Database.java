@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package xyz.lexteam.thestig.data.db;
+package xyz.lexteam.thestig.db;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;

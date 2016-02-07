@@ -40,6 +40,7 @@ public class CommandManager {
 
     public void registerCommand(CommandCallable callable, String... aliases) {
         if (Main.INSTANCE.getConfig().getCommands().getEnabled().contains(callable.getName())) {
+            this.commands.put(callable.getName(), callable);
             for (String alias : aliases) {
                 this.commands.put(alias, callable);
             }
@@ -53,7 +54,7 @@ public class CommandManager {
             String command = messageSplit[0].substring(1);
 
             if (this.commands.containsKey(command)) {
-                this.commands.get(command).call(event.getChannel(), messageSplit);
+                this.commands.get(command).call(event.getChannel(), new CommandArgs(event.getMessage()));
             }
         }
     }
