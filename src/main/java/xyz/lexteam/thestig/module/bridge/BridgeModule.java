@@ -23,8 +23,12 @@
  */
 package xyz.lexteam.thestig.module.bridge;
 
+import com.google.common.base.Preconditions;
 import org.kitteh.irc.client.library.Client;
+import org.kitteh.irc.client.library.element.User;
+import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
+import org.kitteh.irc.client.library.event.channel.ChannelCTCPEvent;
 import org.kitteh.irc.lib.net.engio.mbassy.listener.Handler;
 import xyz.lexteam.thestig.Main;
 import xyz.lexteam.thestig.module.IModule;
@@ -33,22 +37,41 @@ public class BridgeModule implements IModule {
 
     @Handler
     public void onMessageEvent(ChannelMessageEvent event) {
-        if (!event.getActor().getNick().equalsIgnoreCase(event.getClient().getNick())) {
-            String key = event.getClient().getServerInfo().getNetworkName().get() + "-" + event.getChannel().getName();
-
-            if (Main.INSTANCE.getConfig().getBridges().containsKey(key)) {
-                String secondaryChannel = Main.INSTANCE.getConfig().getBridges().get(key);
-                String[] split = secondaryChannel.split("-");
-
-                Client client = Main.INSTANCE.getServers().get(split[0]);
-                if (client != null) {
-                    if (client.getChannel(split[1]).isPresent()) {
-                        client.getChannel(split[1]).get()
-                                .sendMessage(String.format("[%s] %s", event.getActor().getNick(), event.getMessage()));
-                    }
+        if (!isBot(event.getActor())) {
+            BridgeData data = new BridgeData(event.getClient(), event.getChannel());
+            if (data.isBridged()) {
+                Channel channel = data.getSecondaryChannel();
+                if (channel != null) {
+                    channel.sendMessage("[" + event.getActor().getNick() + "] " + event.getMessage());
                 }
             }
         }
+    }
+
+    @Handler
+    public void onAction(ChannelCTCPEvent event) {
+        if (!isBot(event.getActor()) && event.getMessage().startsWith("ACTION ")) {
+            String actionMessage = getActionMessage(event.getMessage());
+            BridgeData data = new BridgeData(event.getClient(), event.getChannel());
+            if (data.isBridged()) {
+                Channel channel = data.getSecondaryChannel();
+                if (channel != null) {
+                    sendAction(channel, "[" + event.getActor().getNick() + "] " + actionMessage);
+                }
+            }
+        }
+    }
+
+    private static void sendAction(Channel channel, String action) {
+        channel.sendCTCPMessage("ACTION " + action);
+    }
+
+    private static String getActionMessage(String raw) {
+        return raw.substring("ACTION ".length());
+    }
+
+    private static boolean isBot(User user) {
+        return user.getNick().equalsIgnoreCase(user.getClient().getNick());
     }
 
     @Override
@@ -59,5 +82,37 @@ public class BridgeModule implements IModule {
     @Override
     public void onEnable() {
 
+    }
+
+    public static class BridgeData {
+        private final String key;
+
+        public BridgeData(Client client, Channel channel) {
+            this.key = client.getServerInfo().getNetworkName().get() + "-" + channel.getName();
+        }
+
+        public boolean isBridged() {
+            return Main.INSTANCE.getConfig().getBridges().containsKey(key);
+        }
+
+        public Client getSecondaryNetwork() {
+            return Main.INSTANCE.getServers().get(getSecondaryData()[0]);
+        }
+
+        public Channel getSecondaryChannel() {
+            Client client = getSecondaryNetwork();
+            if (client == null) return null;
+            return client.getChannel(getSecondaryData()[1]).orElse(null);
+        }
+
+        private String[] secondaryData;
+        private String[] getSecondaryData() {
+            Preconditions.checkState(isBridged(), "%s is not bridged", key);
+            if (secondaryData == null) {
+                String secondaryChannel = Main.INSTANCE.getConfig().getBridges().get(this.key);
+                secondaryData = secondaryChannel.split("-");
+            }
+            return secondaryData;
+        }
     }
 }
