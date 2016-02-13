@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.ClientBuilder;
+import org.kitteh.irc.client.library.util.AcceptingTrustManagerFactory;
 import xyz.lexteam.thestig.command.CommandManager;
 import xyz.lexteam.thestig.data.ConfigModel;
 import xyz.lexteam.thestig.module.IModule;
@@ -77,6 +78,7 @@ public final class Main {
         // irc
         for (ConfigModel.ServerModel serverModel : this.config.getServers()) {
             ClientBuilder clientBuilder = Client.builder();
+            clientBuilder.secureTrustManagerFactory(new AcceptingTrustManagerFactory());
             clientBuilder.serverHost(serverModel.getHost());
             clientBuilder.serverPort(serverModel.getPort());
             if (serverModel.getServerPassword().isPresent()) {

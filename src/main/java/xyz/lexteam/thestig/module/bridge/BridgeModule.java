@@ -56,7 +56,7 @@ public class BridgeModule implements IModule {
             if (data.isBridged()) {
                 Channel channel = data.getSecondaryChannel();
                 if (channel != null) {
-                    sendAction(channel, "[" + event.getActor().getNick() + "] " + actionMessage);
+                    sendAction(channel, event.getActor().getNick() + " " + actionMessage);
                 }
             }
         }
@@ -85,7 +85,9 @@ public class BridgeModule implements IModule {
     }
 
     public static class BridgeData {
+
         private final String key;
+        private String[] secondaryData;
 
         public BridgeData(Client client, Channel channel) {
             this.key = client.getServerInfo().getNetworkName().get() + "-" + channel.getName();
@@ -105,7 +107,6 @@ public class BridgeModule implements IModule {
             return client.getChannel(getSecondaryData()[1]).orElse(null);
         }
 
-        private String[] secondaryData;
         private String[] getSecondaryData() {
             Preconditions.checkState(isBridged(), "%s is not bridged", key);
             if (secondaryData == null) {
