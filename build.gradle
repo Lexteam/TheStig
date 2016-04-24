@@ -5,8 +5,8 @@ plugins {
     id 'idea'
     id 'eclipse'
 
-    id 'com.github.hierynomus.license' version '0.11.0'
-    id 'com.github.johnrengelman.shadow' version '1.2.2'
+    id 'net.minecrell.licenser' version '0.1.2'
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
 }
 
 defaultTasks 'clean', 'licenseFormat'
@@ -37,12 +37,7 @@ dependencies {
 license {
     header file('HEADER.txt')
     include '**/*.java'
-    include '**/*.groovy'
-
-    strictCheck true
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-    }
+    newLine = false
 }
 
 jar {
@@ -66,5 +61,5 @@ artifacts {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.10'
+    gradleVersion = '2.12'
 }
