@@ -21,14 +21,11 @@ ext.url = 'http://www.lexteam.xyz/'
 
 repositories {
     mavenCentral()
-    maven {
-        url 'http://repo.kitteh.org/content/groups/public/'
-    }
 }
 
 dependencies {
     compile 'org.mongodb:mongo-java-driver:3.0.4'
-    compile 'org.kitteh.irc:client-lib:0.3.10'
+    compile 'org.kitteh.irc:client-lib:1.0.0'
     compile 'com.google.code.gson:gson:2.5'
     compile 'com.google.guava:guava:19.0'
     compile 'com.mashape.unirest:unirest-java:1.4.7'
